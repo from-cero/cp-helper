@@ -42,7 +42,7 @@ export function SettingsView({
     try {
       const result = parseBackup(await file.text());
       if (!result.ok) return setNotice({ tone: "error", text: result.error });
-      if (!confirm("Replace your added problems, solved list, history and type importance with this backup?")) return;
+      if (!confirm("Replace your added problems, solved list, history, type importance, settings, filters and Codeforces account with this backup?")) return;
       update(result.backup);
       setNotice({
         tone: "success",
@@ -115,7 +115,7 @@ export function SettingsView({
         <div className="row-between">
           <span>
             Backup
-            <span className="hint block">Added problems, solved list, history and type importance.</span>
+            <span className="hint block">Added problems, solved list, history, type importance, settings, filters and Codeforces account.</span>
           </span>
           <div className="row">
             <button type="button" className="btn" onClick={() => fileInput.current?.click()}>

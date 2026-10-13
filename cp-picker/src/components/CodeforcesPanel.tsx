@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { rangeForRating } from "../lib/codeforces";
 import type { SyncState, ViewProps } from "../useAppData";
 import { Dot } from "./Badges";
@@ -16,6 +16,8 @@ function formatTime(iso: string): string {
 export function CodeforcesPanel({ data, library, update, sync, onSync }: CodeforcesPanelProps) {
   const { profile, settings } = data;
   const [handle, setHandle] = useState(profile?.handle ?? "");
+  const profileHandle = profile?.handle ?? "";
+  useEffect(() => setHandle(profileHandle), [profileHandle]);
   const busy = sync.status === "syncing";
   const solvedInCatalog = data.solved.filter((id) => id.startsWith("cf:") && library.problemById.has(id)).length;
   const range = profile?.rating !== undefined ? rangeForRating(profile.rating) : null;
