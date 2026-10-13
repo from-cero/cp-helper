@@ -187,6 +187,9 @@ function readBackupData(value: Record<string, unknown>): BackupData {
     solved: asStringList(value.solved),
     history: readHistory(value.history),
     importance: readImportance(value.importance),
+    settings: readSettings(value.settings),
+    filters: readFilters(value.filters),
+    profile: readProfile(value.profile),
   };
 }
 
@@ -199,6 +202,9 @@ export function serializeBackup(data: BackupData, updatedAt?: string): string {
     solved: data.solved,
     history: data.history,
     importance: data.importance,
+    settings: data.settings,
+    filters: data.filters,
+    profile: data.profile,
   };
   return JSON.stringify(backup, null, 2);
 }

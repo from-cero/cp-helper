@@ -1,10 +1,18 @@
-import type { AppData, BackupData, GistSync } from "../types";
+import { DEFAULT_FILTERS, DEFAULT_SETTINGS, type AppData, type BackupData, type GistSync } from "../types";
 import { isRecord } from "./guards";
 import { parseBackup, serializeBackup } from "./storage";
 
 const API = "https://api.github.com/gists";
 const FILE = "cp-picker.json";
-const EMPTY: BackupData = { custom: { categories: [], types: [], problems: [] }, solved: [], history: [], importance: {} };
+const EMPTY: BackupData = {
+  custom: { categories: [], types: [], problems: [] },
+  solved: [],
+  history: [],
+  importance: {},
+  settings: DEFAULT_SETTINGS,
+  filters: DEFAULT_FILTERS,
+  profile: null,
+};
 
 export function parseGistId(input: string): string {
   const path = input.trim().split(/[?#]/)[0] ?? "";
@@ -69,6 +77,19 @@ function mergeKeyed<T>(base: readonly T[], local: readonly T[], remote: readonly
   return out;
 }
 
+function mergeValue<T>(base: T, local: T, remote: T): T {
+  const was = JSON.stringify(base);
+  return JSON.stringify(local) === was ? remote : JSON.stringify(remote) === was ? local : remote;
+}
+
+function mergeFields<T extends object>(base: T, local: T, remote: T): T {
+  const entry = (item: [string, unknown]) => item[0];
+  return {
+    ...local,
+    ...Object.fromEntries(mergeKeyed(Object.entries(base), Object.entries(local), Object.entries(remote), entry)),
+  };
+}
+
 export function mergeData(base: BackupData | null, local: BackupData, remote: BackupData): BackupData {
   const b = base ?? EMPTY;
   const byId = <T extends { id: string }>(item: T) => item.id;
@@ -86,11 +107,22 @@ export function mergeData(base: BackupData | null, local: BackupData, remote: Ba
     importance: Object.fromEntries(
       mergeKeyed(Object.entries(b.importance), Object.entries(local.importance), Object.entries(remote.importance), entry),
     ),
+    settings: mergeFields(b.settings, local.settings, remote.settings),
+    filters: mergeFields(b.filters, local.filters, remote.filters),
+    profile: mergeValue(b.profile, local.profile, remote.profile),
   };
 }
 
 export function syncedPart(data: BackupData): BackupData {
-  return { custom: data.custom, solved: data.solved, history: data.history, importance: data.importance };
+  return {
+    custom: data.custom,
+    solved: data.solved,
+    history: data.history,
+    importance: data.importance,
+    settings: data.settings,
+    filters: data.filters,
+    profile: data.profile,
+  };
 }
 
 export function sameData(a: BackupData | undefined, b: BackupData | undefined): boolean {
