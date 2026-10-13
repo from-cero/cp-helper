@@ -99,7 +99,7 @@ export interface AppData {
   gist: GistSync | null;
 }
 
-export type BackupData = Pick<AppData, "custom" | "solved" | "history" | "importance">;
+export type BackupData = Pick<AppData, "custom" | "solved" | "history" | "importance" | "settings" | "filters" | "profile">;
 
 export interface GistSync {
   gistId: string;

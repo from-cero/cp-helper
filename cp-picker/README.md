@@ -14,7 +14,7 @@ Problems are organized as **category** (Graph Theory, Number Theory, Strings, ..
 - Browse tab lists every type with its problems easy to hard; tick problems as solved there or from the Today card.
 - Add tab takes many problem links at once and files them under a category and problem type (existing or new).
 - History of daily picks; entries can be deleted.
-- Backup export / import of your added problems, solved list, history and type importance.
+- Backup export / import of your added problems, solved list, history, type importance, settings (history window and follow-rating), filters and Codeforces account.
 - GitHub Gist sync of the same data across machines (see below).
 
 ## Syncing across machines
