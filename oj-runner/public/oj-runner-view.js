@@ -2066,11 +2066,11 @@
   }
 
   /**
-   * @param {number} gi
+   * @param {string} gid
    * @returns {SubmitEntry[]}
    */
-  function submitEntries(gi) {
-    return submitStatusByGroup[String(groups[gi]?.id ?? "")] ?? [];
+  function submitEntries(gid) {
+    return submitStatusByGroup[gid] ?? [];
   }
 
   /**
@@ -2079,7 +2079,7 @@
    * @param {number} gi
    */
   function groupSubmitSending(gi) {
-    return submitEntries(gi).some((e) => e.phase === "sending");
+    return submitEntries(groupIdAt(gi)).some((e) => e.phase === "sending");
   }
 
   /**
@@ -2123,10 +2123,10 @@
   /**
    * Rebuild one problem's row of submit chips.
    * @param {HTMLElement} host `.submit-statuses` in the problem header
-   * @param {number} gi
+   * @param {string} gid
    */
-  function paintSubmitStatuses(host, gi) {
-    const entries = submitEntries(gi);
+  function paintSubmitStatuses(host, gid) {
+    const entries = submitEntries(gid);
     /** @type {Map<string, HTMLButtonElement>} */
     const existing = new Map();
     host.querySelectorAll("button.submit-status").forEach((b) => {
@@ -2152,25 +2152,24 @@
   }
 
   /**
-   * @param {number} gi
+   * @param {string} gid
    */
-  function repaintSubmitStatuses(gi) {
-    const host = listEl.querySelector(`.submit-statuses[data-cp-gi="${gi}"]`);
+  function repaintSubmitStatuses(gid) {
+    const host = listEl.querySelector(`.submit-statuses[data-cp-gid="${CSS.escape(gid)}"]`);
     if (host instanceof HTMLElement) {
-      paintSubmitStatuses(host, gi);
+      paintSubmitStatuses(host, gid);
     }
   }
 
   /**
    * Record and show one submission's stage or verdict, adding its chip after the others when it is
    * new. A slot that is no longer listed (cleared by the user) is left alone.
-   * @param {number} gi
+   * @param {string} gid
    * @param {string} slot
    * @param {Partial<SubmitEntry>} patch
    * @param {boolean} [create]
    */
-  function setSubmitStatus(gi, slot, patch, create) {
-    const gid = String(groups[gi]?.id ?? "");
+  function setSubmitStatus(gid, slot, patch, create) {
     if (!gid) {
       return;
     }
@@ -2195,16 +2194,15 @@
       entry.title = patch.text;
     }
     submitStatusByGroup[gid] = list;
-    repaintSubmitStatuses(gi);
+    repaintSubmitStatuses(gid);
     persistSubmitStatus();
   }
 
   /**
-   * @param {number} gi
+   * @param {string} gid
    * @param {string} slot
    */
-  function removeSubmitStatus(gi, slot) {
-    const gid = String(groups[gi]?.id ?? "");
+  function removeSubmitStatus(gid, slot) {
     const list = submitStatusByGroup[gid];
     if (!list) {
       return;
@@ -2215,7 +2213,7 @@
     } else {
       delete submitStatusByGroup[gid];
     }
-    repaintSubmitStatuses(gi);
+    repaintSubmitStatuses(gid);
     persistSubmitStatus();
     applySubmitButtonsState();
   }
@@ -2224,12 +2222,12 @@
    * @param {number} gi
    */
   function clearSubmitStatuses(gi) {
-    const gid = String(groups[gi]?.id ?? "");
-    if (!gid || !submitStatusByGroup[gid]) {
+    const gid = groupIdAt(gi);
+    if (!submitStatusByGroup[gid]) {
       return;
     }
     delete submitStatusByGroup[gid];
-    repaintSubmitStatuses(gi);
+    repaintSubmitStatuses(gid);
     persistSubmitStatus();
   }
 
@@ -2307,7 +2305,7 @@
     hideErr();
     const slot = nextSubmitSlot();
     setSubmitStatus(
-      gi,
+      groupIdAt(gi),
       slot,
       { text: "SENDING", tone: "", title: "Submitting", phase: "sending" },
       true,
@@ -2690,13 +2688,14 @@
 
         submitStatusG = document.createElement("span");
         submitStatusG.className = "submit-statuses";
-        submitStatusG.dataset.cpGi = String(gi);
-        paintSubmitStatuses(submitStatusG, gi);
+        const gid = groupIdAt(gi);
+        submitStatusG.dataset.cpGid = gid;
+        paintSubmitStatuses(submitStatusG, gid);
         submitStatusG.addEventListener("click", (e) => {
           const chip = e.target instanceof Element ? e.target.closest("button.submit-status") : null;
           if (!(chip instanceof HTMLElement)) return;
           if (!e.ctrlKey && !e.metaKey) return;
-          const entry = submitEntries(gi).find((x) => x.slot === chip.dataset.cpSlot);
+          const entry = submitEntries(gid).find((x) => x.slot === chip.dataset.cpSlot);
           const url = entry?.url || entry?.statusUrl || "";
           if (url !== "") {
             vscode.postMessage({ type: "openSubmission", url });
@@ -2708,14 +2707,14 @@
           e.preventDefault();
           const slot = chip.dataset.cpSlot ?? "";
           if (e.shiftKey) {
-            removeSubmitStatus(gi, slot);
+            removeSubmitStatus(gid, slot);
             return;
           }
-          const entry = submitEntries(gi).find((x) => x.slot === slot);
+          const entry = submitEntries(gid).find((x) => x.slot === slot);
           if (!entry || entry.phase !== "" || !submitBridgeConnected) return;
           vscode.postMessage({
             type: "refreshVerdict",
-            groupIndex: gi,
+            groupId: gid,
             slot,
             submissionId: entry.sid,
           });
@@ -3681,9 +3680,9 @@
       return;
     }
     if (m.type === "submitState") {
-      const gi = typeof m.groupIndex === "number" ? m.groupIndex : -1;
+      const gid = typeof m.groupId === "string" ? m.groupId : "";
       const slot = typeof m.slot === "string" ? m.slot : "";
-      if (gi < 0 || slot === "") {
+      if (gid === "" || slot === "") {
         return;
       }
       const refresh = m.refresh === true;
@@ -3694,7 +3693,7 @@
         ...(url !== "" ? { url } : {}),
       };
       if (m.phase === "start") {
-        setSubmitStatus(gi, slot, {
+        setSubmitStatus(gid, slot, {
           ...(typeof m.statusUrl === "string" && m.statusUrl !== ""
             ? { statusUrl: m.statusUrl }
             : {}),
@@ -3708,7 +3707,7 @@
         const stage = String(m.stage ?? "working");
         const phase = refresh ? "checking" : stage === "judging" ? "judging" : "sending";
         if (live !== "") {
-          setSubmitStatus(gi, slot, {
+          setSubmitStatus(gid, slot, {
             ...link,
             text: shortVerdict(live),
             title: live,
@@ -3716,7 +3715,7 @@
             phase,
           });
         } else {
-          setSubmitStatus(gi, slot, {
+          setSubmitStatus(gid, slot, {
             ...link,
             text: refresh ? "CHECKING" : phase === "judging" ? "SUBMITTED" : "SENDING",
             title: SUBMIT_STAGE_TEXT[stage] ?? stage,
@@ -3727,9 +3726,9 @@
       } else if (m.phase === "done") {
         const settled = { phase: "", ...link };
         if (m.cancelled === true) {
-          removeSubmitStatus(gi, slot);
+          removeSubmitStatus(gid, slot);
         } else if (typeof m.error === "string" && m.error !== "") {
-          setSubmitStatus(gi, slot, {
+          setSubmitStatus(gid, slot, {
             ...settled,
             text: "ERROR",
             tone: "bad",
@@ -3737,7 +3736,7 @@
           });
         } else if (typeof m.verdict === "string" && m.verdict !== "") {
           const provisional = m.accepted !== true && m.provisional === true;
-          setSubmitStatus(gi, slot, {
+          setSubmitStatus(gid, slot, {
             ...settled,
             text: shortVerdict(m.verdict),
             tone: m.accepted === true ? "ok" : provisional ? "provisional" : "bad",
@@ -3746,14 +3745,14 @@
               : m.verdict,
           });
         } else if (m.submitted === true) {
-          setSubmitStatus(gi, slot, {
+          setSubmitStatus(gid, slot, {
             ...settled,
             text: "OK",
             tone: "ok",
             title: "Submitted",
           });
         } else {
-          removeSubmitStatus(gi, slot);
+          removeSubmitStatus(gid, slot);
         }
       }
       applySubmitButtonsState();
