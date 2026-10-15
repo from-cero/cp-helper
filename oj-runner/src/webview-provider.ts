@@ -147,6 +147,12 @@ export class OjRunnerViewProvider
   private pendingRunMessage: Record<string, unknown> | undefined;
 
   /**
+   * Submit chip updates that found no live webview, latest per chip slot. A submit outlives the
+   * webview that started it, so they go to whichever one asks for `restore` next.
+   */
+  private readonly pendingSubmitStates = new Map<string, Record<string, unknown>>();
+
+  /**
    * Bumped by every Run click. A run whose token is stale has been superseded and must stay
    * silent: its late `runResult` / `runState(false)` / `runAllDone` messages would otherwise
    * clobber the UI of the run that replaced it.
@@ -174,6 +180,16 @@ export class OjRunnerViewProvider
   setSubmitBridge(bridge: SubmitBridge): void {
     this.submitBridge = bridge;
     this.postSubmitBridgeState();
+  }
+
+  private postSubmitState(message: Record<string, unknown>): void {
+    if (this.webviewReady && this.webviewView) {
+      void this.webviewView.webview.postMessage(message);
+      return;
+    }
+    const slot = String(message.slot ?? "");
+    this.pendingSubmitStates.delete(slot);
+    this.pendingSubmitStates.set(slot, message);
   }
 
   /** Mirror the current bridge connection state into the Samples view. */
@@ -483,6 +499,10 @@ export class OjRunnerViewProvider
           postActiveSourceHint(webviewView.webview);
           this.postSubmitBridgeState();
           this.webviewReady = true;
+          for (const m of this.pendingSubmitStates.values()) {
+            webviewView.webview.postMessage(m);
+          }
+          this.pendingSubmitStates.clear();
           const pending = this.pendingRunMessage;
           this.pendingRunMessage = undefined;
           if (pending) {
@@ -640,12 +660,17 @@ export class OjRunnerViewProvider
           const groupIndex =
             typeof msg.groupIndex === "number" ? msg.groupIndex : 0;
           const slot = typeof msg.slot === "string" ? msg.slot : "";
+          const wsFolderSubmit = vscode.workspace.workspaceFolders?.[0]?.uri;
+          const submitGroups = wsFolderSubmit
+            ? await loadCaseGroupsFromFile(this.ctx.workspaceState, wsFolderSubmit)
+            : loadCaseGroups(this.ctx.workspaceState);
+          const groupId = String(submitGroups[groupIndex]?.id ?? "");
           const postSubmitState = (
             extra: Record<string, unknown>,
           ): void => {
-            webviewView.webview.postMessage({
+            this.postSubmitState({
               type: "submitState",
-              groupIndex,
+              groupId,
               slot,
               ...extra,
             });
@@ -654,17 +679,12 @@ export class OjRunnerViewProvider
             postSubmitState({ phase: "done", error: "Submit bridge is disabled." });
             break;
           }
-          const wsFolderSubmit = vscode.workspace.workspaceFolders?.[0]?.uri;
-          const submitGroups = wsFolderSubmit
-            ? await loadCaseGroupsFromFile(this.ctx.workspaceState, wsFolderSubmit)
-            : loadCaseGroups(this.ctx.workspaceState);
-          const submitGroupKey = String(submitGroups[groupIndex]?.id ?? `#${groupIndex}`);
-          const submitKey = `${submitGroupKey}::${slot}`;
+          const submitKey = `${groupId}::${slot}`;
           const pinned = this.submitBridge.supports("pin");
           if (
             this.submitInFlight.has(submitKey) ||
             (!pinned &&
-              [...this.submitInFlight].some((k) => k.startsWith(`${submitGroupKey}::`)))
+              [...this.submitInFlight].some((k) => k.startsWith(`${groupId}::`)))
           ) {
             postSubmitState({
               phase: "done",
@@ -704,22 +724,10 @@ export class OjRunnerViewProvider
           break;
         }
         case "refreshVerdict": {
-          const groupIndex =
-            typeof msg.groupIndex === "number" ? msg.groupIndex : 0;
+          const groupId = typeof msg.groupId === "string" ? msg.groupId : "";
           const slot = typeof msg.slot === "string" ? msg.slot : "";
           const submissionId =
             typeof msg.submissionId === "string" ? msg.submissionId : "";
-          const postSubmitState = (
-            extra: Record<string, unknown>,
-          ): void => {
-            webviewView.webview.postMessage({
-              type: "submitState",
-              groupIndex,
-              slot,
-              refresh: true,
-              ...extra,
-            });
-          };
           if (!this.submitBridge) {
             notify("error", "Submit bridge is disabled.", "submitNotifications");
             break;
@@ -728,7 +736,19 @@ export class OjRunnerViewProvider
           const refreshGroups = wsFolderRefresh
             ? await loadCaseGroupsFromFile(this.ctx.workspaceState, wsFolderRefresh)
             : loadCaseGroups(this.ctx.workspaceState);
-          const refreshKey = `${String(refreshGroups[groupIndex]?.id ?? `#${groupIndex}`)}::${slot}`;
+          const refreshGroup = refreshGroups.find((g) => String(g.id) === groupId);
+          const postSubmitState = (
+            extra: Record<string, unknown>,
+          ): void => {
+            this.postSubmitState({
+              type: "submitState",
+              groupId,
+              slot,
+              refresh: true,
+              ...extra,
+            });
+          };
+          const refreshKey = `${groupId}::${slot}`;
           if (this.submitInFlight.has(refreshKey)) {
             notify(
               "warn",
@@ -741,13 +761,13 @@ export class OjRunnerViewProvider
           try {
             const result = await refreshGroupVerdict(
               this.submitBridge,
-              refreshGroups[groupIndex],
+              refreshGroup,
               submissionId,
               () =>
                 postSubmitState({
                   phase: "start",
                   stage: "checking",
-                  statusUrl: statusUrlFor(refreshGroups[groupIndex]),
+                  statusUrl: statusUrlFor(refreshGroup),
                 }),
               (p) =>
                 postSubmitState({
