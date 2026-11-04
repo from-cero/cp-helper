@@ -60,7 +60,8 @@ next page load.
 
 With **Hide Codeforces problem tags except the rating** on (options page, default off), a content
 script hides every Codeforces problem tag except the difficulty (**`*2600`**), so the topic tags do
-not give the solution away. The rounded box around each hidden tag is hidden with it. It runs at `document_start` and hides all tags with a style before the
+not give the solution away. The
+rounded box around each hidden tag is hidden with it. It runs at `document_start` and hides all tags with a style before the
 page paints, then shows the ones whose text is `*<number>`. The change applies on the next page load.
 
 ## Submit bridge
