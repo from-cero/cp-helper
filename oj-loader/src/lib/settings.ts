@@ -54,3 +54,15 @@ export async function getSubmitSettings(): Promise<SubmitSettings> {
     closeJudgedTabs: raw.closeJudgedTabs === true,
   };
 }
+
+/** Whether the content script shortens Codeforces and AtCoder problem tab titles. */
+export async function getShortTabTitles(): Promise<boolean> {
+  const raw = await chrome.storage.sync.get({ shortTabTitles: true });
+  return raw.shortTabTitles !== false;
+}
+
+/** Whether the content script hides Codeforces problem tags other than the rating. */
+export async function getHideCodeforcesTags(): Promise<boolean> {
+  const raw = await chrome.storage.sync.get({ hideCodeforcesTags: false });
+  return raw.hideCodeforcesTags === true;
+}

@@ -1,3 +1,5 @@
+import { getShortTabTitles } from "./lib/settings";
+
 const cfLetter = (s: string) => (/^[a-z]$/iu.test(s) ? s.toUpperCase() : s);
 
 function shortTitleFor(href: string): string {
@@ -42,23 +44,31 @@ function applyTitle(): void {
   }
 }
 
-applyTitle();
+function start(): void {
+  applyTitle();
 
-const head = document.head || document.documentElement;
-if (head) {
-  new MutationObserver(() => {
-    if (wanted !== "" && document.title !== wanted) {
-      document.title = wanted;
-    }
-  }).observe(head, { childList: true, subtree: true, characterData: true });
+  const head = document.head || document.documentElement;
+  if (head) {
+    new MutationObserver(() => {
+      if (wanted !== "" && document.title !== wanted) {
+        document.title = wanted;
+      }
+    }).observe(head, { childList: true, subtree: true, characterData: true });
+  }
+
+  for (const key of ["pushState", "replaceState"] as const) {
+    const original = history[key];
+    history[key] = function (this: History, ...args: Parameters<History[typeof key]>) {
+      const r = original.apply(this, args);
+      applyTitle();
+      return r;
+    };
+  }
+  window.addEventListener("popstate", applyTitle);
 }
 
-for (const key of ["pushState", "replaceState"] as const) {
-  const original = history[key];
-  history[key] = function (this: History, ...args: Parameters<History[typeof key]>) {
-    const r = original.apply(this, args);
-    applyTitle();
-    return r;
-  };
-}
-window.addEventListener("popstate", applyTitle);
+void getShortTabTitles().then((enabled) => {
+  if (enabled) {
+    start();
+  }
+});
