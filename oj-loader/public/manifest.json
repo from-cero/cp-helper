@@ -48,6 +48,17 @@
       "js": ["tab-title.js"],
       "run_at": "document_end",
       "all_frames": false
+    },
+    {
+      "matches": [
+        "https://codeforces.com/*",
+        "http://codeforces.com/*",
+        "https://*.codeforces.com/*",
+        "http://*.codeforces.com/*"
+      ],
+      "js": ["cf-tags.js"],
+      "run_at": "document_start",
+      "all_frames": false
     }
   ],
   "background": {
