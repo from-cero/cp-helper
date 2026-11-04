@@ -16,7 +16,8 @@ void getHideCodeforcesTags().then((enabled) => {
     return;
   }
   const style = document.createElement("style");
-  style.textContent = `html.${ROOT_CLASS} .tag-box:not(.${KEEP_CLASS}) { display: none !important; }`;
+  const hidden = `.tag-box:not(.${KEEP_CLASS})`;
+  style.textContent = `html.${ROOT_CLASS} ${hidden}, html.${ROOT_CLASS} .roundbox:not(.sidebox):has(${hidden}) { display: none !important; }`;
   document.documentElement.append(style);
   document.documentElement.classList.add(ROOT_CLASS);
   if (document.readyState === "loading") {
