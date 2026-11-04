@@ -22,6 +22,7 @@ const builds = [
     entryPoints: {
       options: "src/options.ts",
       "tab-title": "src/tab-title.ts",
+      "cf-tags": "src/cf-tags.ts",
       "inpage/extract": "src/inpage/dispatch.ts",
       "inpage/submit": "src/inpage/submit-dispatch.ts",
     },

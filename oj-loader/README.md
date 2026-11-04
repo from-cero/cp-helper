@@ -52,7 +52,16 @@ A content script on **Codeforces** and **AtCoder** problem pages rewrites the br
 **`/contests/abc451/tasks/abc451_a`** -> **`A - abc451`**), so a row of open problems reads as the
 problem list it is. Contest lists, standings and every other page keep their own title, and the
 title is re-applied when the page rewrites it or navigates in place. **LeetCode** is not covered:
-its URL carries the slug only, never the problem number.
+its URL carries the slug only, never the problem number. Turn it off with **Short tab titles on
+Codeforces and AtCoder problem pages** on the options page (default on); the change applies on the
+next page load.
+
+### Codeforces problem tags
+
+With **Hide Codeforces problem tags except the rating** on (options page, default off), a content
+script hides every Codeforces problem tag except the difficulty (**`*2600`**), so the topic tags do
+not give the solution away. It runs at `document_start` and hides all tags with a style before the
+page paints, then shows the ones whose text is `*<number>`. The change applies on the next page load.
 
 ## Submit bridge
 
@@ -112,10 +121,11 @@ TypeScript under **`src/`**, static files under **`public/`**. **`npm run build`
 | `src/lib/pair-samples.ts`                | Pair input/output `<pre>` blocks into sample objects.                                                                                                                                                                                                                                                     |
 | `src/lib/contest-url.ts`                 | Problem labels + supported-host check.                                                                                                                                                                                                                                                                    |
 | `src/lib/oj-runner-client.ts`            | `fetch` POST to localhost; optional `vscode://` tab.                                                                                                                                                                                                                                                      |
-| `src/lib/settings.ts`                    | `chrome.storage.sync` defaults for import/focus URIs.                                                                                                                                                                                                                                                     |
+| `src/lib/settings.ts`                    | `chrome.storage.sync` defaults for import, submit and page settings.                                                                                                                                                                                                                                                   |
 | `src/lib/constants.ts`                   | Default URIs and badge glyph.                                                                                                                                                                                                                                                                             |
 | `src/lib/badge.ts`                       | Toolbar badge flash success / error.                                                                                                                                                                                                                                                                      |
 | `src/tab-title.ts`                       | Content script: short tab titles on Codeforces and AtCoder problem pages.                                                                                                                                                                                                                                 |
+| `src/cf-tags.ts`                         | Content script: hides Codeforces problem tags except the rating.                                                                                                                                                                                                                                          |
 | `src/options.ts` / `public/options.html` | Options page (separate from the service worker).                                                                                                                                                                                                                                                          |
 | `public/manifest.json`                   | Extension manifest, copied to `dist/` as is.                                                                                                                                                                                                                                                              |
 | `public/icons/icon-256.png`              | Master artwork: white outlined documents with a check badge inside a dashed sync ring, on a transparent background. `icons/icon-*.png` are downscaled from it and are what the manifest loads; 16 is the check badge alone, cropped out of the master, since the full drawing turns to mush at that size. |
@@ -149,6 +159,7 @@ Right-click the extension -> **Options** (or open the options page from **Extens
 - Whether to use localhost POST and whether to fall back to the focus URL.
 - **Submit bridge** URL from **OJ Runner: Copy Submit Bridge URL**, and whether submitting through
   this browser is allowed at all.
+- Short tab titles on problem pages, and hiding Codeforces tags other than the rating.
 
 ## Payload shape
 

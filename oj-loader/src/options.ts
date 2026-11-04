@@ -7,6 +7,8 @@ const focusUriEl = document.getElementById("focusUri");
 const submitBridgeEnabledEl = document.getElementById("submitBridgeEnabled");
 const submitBridgeUrlEl = document.getElementById("submitBridgeUrl");
 const closeJudgedTabsEl = document.getElementById("closeJudgedTabs");
+const shortTabTitlesEl = document.getElementById("shortTabTitles");
+const hideCodeforcesTagsEl = document.getElementById("hideCodeforcesTags");
 const saveEl = document.getElementById("save");
 const statusEl = document.getElementById("status");
 
@@ -18,6 +20,8 @@ if (
   !(submitBridgeEnabledEl instanceof HTMLInputElement) ||
   !(submitBridgeUrlEl instanceof HTMLInputElement) ||
   !(closeJudgedTabsEl instanceof HTMLInputElement) ||
+  !(shortTabTitlesEl instanceof HTMLInputElement) ||
+  !(hideCodeforcesTagsEl instanceof HTMLInputElement) ||
   !(saveEl instanceof HTMLButtonElement) ||
   !(statusEl instanceof HTMLElement)
 ) {
@@ -32,6 +36,8 @@ const storageDefaults = {
   submitBridgeEnabled: true,
   submitBridgeUrl: "",
   closeJudgedTabs: false,
+  shortTabTitles: true,
+  hideCodeforcesTags: false,
 };
 
 chrome.storage.sync.get(storageDefaults, (items) => {
@@ -51,6 +57,8 @@ chrome.storage.sync.get(storageDefaults, (items) => {
   submitBridgeUrlEl.value =
     typeof items.submitBridgeUrl === "string" ? items.submitBridgeUrl : "";
   closeJudgedTabsEl.checked = items.closeJudgedTabs === true;
+  shortTabTitlesEl.checked = items.shortTabTitles !== false;
+  hideCodeforcesTagsEl.checked = items.hideCodeforcesTags === true;
 });
 
 saveEl.addEventListener("click", () => {
@@ -66,6 +74,8 @@ saveEl.addEventListener("click", () => {
       submitBridgeEnabled: submitBridgeEnabledEl.checked,
       submitBridgeUrl: submitBridgeUrlEl.value.trim(),
       closeJudgedTabs: closeJudgedTabsEl.checked,
+      shortTabTitles: shortTabTitlesEl.checked,
+      hideCodeforcesTags: hideCodeforcesTagsEl.checked,
     },
     () => {
       statusEl.textContent = "Saved.";
