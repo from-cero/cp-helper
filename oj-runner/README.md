@@ -50,6 +50,9 @@ Sample JSON:
 | ojRunner.showOutput          | Show OJ Runner output channel                                              |
 | ojRunner.copySubmitBridgeUrl | Copy the submit bridge URL (with its token) for the OJ Loader options page |
 | ojRunner.clearBuildCache     | Delete every cached compiled binary                                        |
+| ojRunner.selectCompilePreset | Set the NORMAL, LOCAL or DEBUG compile command from a preset               |
+| ojRunner.exportCases         | Write every case to testcases/ in the workspace, replacing its contents    |
+| ojRunner.stressTest          | Stress test with generated input (needs ojRunner.stressGeneratorCommand)   |
 
 Default keybindings:
 
@@ -214,11 +217,10 @@ One sample produces one record. Expected/actual dumps appear as indented detail 
 
 ## Publishing checklist
 
-1. Bump package.json version.
-2. Bump ../oj-loader/package.json and ../oj-loader/public/manifest.json versions.
-3. Ensure package-lock.json matches.
-4. Run npm run compile.
-5. Build package with npm run vsix.
+1. Run npm run bump to raise the OJ Runner and OJ Loader versions together.
+2. Ensure package-lock.json matches.
+3. Run npm run compile.
+4. Build package with npm run vsix.
 
 ## License
 
