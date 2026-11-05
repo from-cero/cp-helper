@@ -74,8 +74,10 @@ the buttons in its own header, which is how you point it at a different file.
 | ojRunner.compileCommand             | NORMAL build, used by a plain click on Run (keep it judge-like: -O2, no sanitizers)                                             |
 | ojRunner.localCompileCommand        | LOCAL build, used by Shift+click on Run (empty = compileCommand with -DLOCAL injected)                                          |
 | ojRunner.debugCompileCommand        | DEBUG build behind each sample's Debug button; Shift+click adds -DLOCAL (empty = the Run build plus -g -O0)                     |
+| ojRunner.debugConfigName            | launch.json configuration the Debug button starts; the sample input is its stdin (falls back to debugCompileCommand)            |
 | ojRunner.debugLocalConfigName       | launch.json configuration Shift+click on Debug starts (empty = debugConfigName, which cannot take -DLOCAL)                      |
 | ojRunner.runCommand                 | Execute command template                                                                                                        |
+| ojRunner.workingDirectory           | Working directory for compile and run (empty = the source file directory)                                                       |
 | ojRunner.runTimeoutMs               | Compile/run timeout in ms (used when the problem carries no judge limit)                                                        |
 | ojRunner.useJudgeTimeLimit          | Judge NORMAL runs against the time limit scraped at import (LOCAL runs keep runTimeoutMs)                                       |
 | ojRunner.timeLimitFactor            | Slack over the judge limit before the process is killed                                                                         |
@@ -83,7 +85,9 @@ the buttons in its own header, which is how you point it at a different file.
 | ojRunner.floatAbsEpsilon            | Absolute float tolerance                                                                                                        |
 | ojRunner.floatRelEpsilon            | Relative float tolerance                                                                                                        |
 | ojRunner.trimOutput                 | Trim trailing whitespace before compare                                                                                         |
+| ojRunner.checkerCommand             | Checker run after a WA, for problems with several correct answers (exit 0 = AC)                                                 |
 | ojRunner.notifications              | Notification for everything but a submit: `auto` (closed after 1s, a problem left to VS Code for 10s; default), `sticky`, `off` |
+| ojRunner.showOutputOnRun            | Open the output log on every run (default off)                                                                                  |
 | ojRunner.enableLocalImportServer    | Enable localhost import server                                                                                                  |
 | ojRunner.localImportPort            | Local import port (default 17337)                                                                                               |
 | ojRunner.instantRunAllOnLocalImport | Run the problem that was just synced, after a single-problem local import                                                       |
@@ -92,6 +96,9 @@ the buttons in its own header, which is how you point it at a different file.
 | ojRunner.submitConfirm              | Ask before every submit (default on)                                                                                            |
 | ojRunner.submitNotifications        | Notification a submit pops: `auto` (closed after 1s, a problem left to VS Code for 10s; default), `sticky`, `off`               |
 | ojRunner.submitPollTimeoutMs        | How long a submission may stay off the judge's status page before watching gives up                                             |
+| ojRunner.stressGeneratorCommand     | Command whose stdout is the input of each stress iteration                                                                      |
+| ojRunner.stressReferenceCommand     | Brute-force solution compared against runCommand (empty = only RE and TLE are caught)                                           |
+| ojRunner.stressMaxIterations        | Stress iterations before stopping (default 100)                                                                                 |
 
 ## Samples view
 
