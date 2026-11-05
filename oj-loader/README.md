@@ -150,7 +150,7 @@ bundles with esbuild and writes the loadable extension to `dist/`.
 | `src/cf-tags.ts`                         | Content script: hides Codeforces problem tags except the rating.                                      |
 | `src/options.ts` / `public/options.html` | Options page, separate from the service worker.                                                       |
 | `public/manifest.json`                   | Extension manifest, copied to `dist/` as is.                                                          |
-| `public/icons/icon-256.png`              | Master icon; the other `icons/icon-*.png` files are downscaled from it.                               |
+| `public/icons/icon-256.png`              | Master icon; the manifest loads the `icons/icon-*.png` files downscaled from it.                      |
 
 To drop a judge, delete its scraper or submit driver and its branch in `dispatch.ts` or
 `submit-dispatch.ts`.
@@ -196,8 +196,8 @@ The POST body is JSON that OJ Runner understands: a plain array of cases, or a w
 `{ problem, samples }` or `{ problems: [...] }` for multi-problem imports. The optional wrapper
 field `source` is set to `oj-loader` for debugging.
 
-A body with `clipboardText` and no cases is not an import: OJ Runner writes that string to the VS
-Code clipboard and stops. The Codeforces, AtCoder and LeetCode contest pages use it for the
+A body with `clipboardText` and no cases is not an import: OJ Runner writes that string to the
+VS Code clipboard and stops. The Codeforces, AtCoder and LeetCode contest pages use it for the
 `contest.sh` arguments.
 
 Codeforces and AtCoder imports also carry the problem page `url`, which OJ Runner turns into a
@@ -209,11 +209,13 @@ Codeforces and AtCoder statements also give a time limit. When it is found it is
 against it. The memory limit is sent the same way as `memoryLimitMb` and shown next to the time
 limit. LeetCode publishes neither, so both fields are absent there.
 
-OJ Runner's instant Run all after an import applies only when the payload resolves to one problem.
+OJ Runner's instant Run all after an import applies only when the payload resolves to one problem
+group. It needs no extra HTTP headers.
 
 ## Version
 
-The version is in `public/manifest.json`. Bump it whenever you change this extension.
+The version is the `version` field of `public/manifest.json`. Bump it whenever you change this
+extension.
 
 Run `npm run bump` here or in `oj-runner/` (or `make bump-oj-loader` from the repo root). It
 raises the patch version in `oj-runner/package.json`, `oj-loader/package.json`,
