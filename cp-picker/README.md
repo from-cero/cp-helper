@@ -106,7 +106,7 @@ Requires Node 20+.
 
 ```sh
 npm install
-npm run build      # typecheck + bundle into dist/
+npm run build      # check data ids, typecheck, bundle into dist/
 ```
 
 `npm run dev` serves the popup at http://localhost:5173 for UI work; outside the extension it falls back to `localStorage`.
@@ -130,6 +130,8 @@ public/manifest.json          extension manifest, copied to dist/
 public/icons/                 toolbar icons
 scripts/assign-categories.mjs picks one category per problem into src/data/assignments.json
 scripts/sort-groups.mjs       sorts each category's groups in src/data/groups.json by problem count
+scripts/check-types.mjs       validates category, group and type ids in the data files
+scripts/bump-version.mjs      raises the version in package.json and public/manifest.json
 src/types.ts                  data model and defaults
 src/data/sources/             bundled problem catalogs
 src/data/assignments.json     category chosen for problems tagged in several categories
@@ -141,7 +143,7 @@ src/lib/library.ts            merges catalogs, one category per problem, orders 
 src/lib/picker.ts             category -> weighted type -> problem selection (pure)
 src/lib/importance.ts         type importance, pick weights and star labels
 src/lib/daily.ts              today's pick and shuffle logic (pure)
-src/lib/links.ts              Codeforces / AtCoder link parsing
+src/lib/links.ts              Codeforces / AtCoder / CSES link parsing
 src/lib/lookup.ts             title and rating lookup for added links
 src/lib/codeforces.ts         Codeforces handle sync and rating-based range
 src/lib/gist.ts               GitHub Gist pull / push and three-way merge
