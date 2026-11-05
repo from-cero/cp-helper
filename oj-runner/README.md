@@ -74,7 +74,7 @@ the buttons in its own header, which is how you point it at a different file.
 | ojRunner.compileCommand             | NORMAL build, used by a plain click on Run (keep it judge-like: -O2, no sanitizers)                                             |
 | ojRunner.localCompileCommand        | LOCAL build, used by Shift+click on Run (empty = compileCommand with -DLOCAL injected)                                          |
 | ojRunner.debugCompileCommand        | DEBUG build behind each sample's Debug button; Shift+click adds -DLOCAL (empty = the Run build plus -g -O0)                     |
-| ojRunner.debugConfigName            | launch.json configuration the Debug button starts; the sample input is its stdin (falls back to debugCompileCommand)            |
+| ojRunner.debugConfigName            | launch.json configuration the Debug button starts, sample as stdin (default `LLDB Debug`; no match = inline CodeLLDB)           |
 | ojRunner.debugLocalConfigName       | launch.json configuration Shift+click on Debug starts (empty = debugConfigName, which cannot take -DLOCAL)                      |
 | ojRunner.runCommand                 | Execute command template                                                                                                        |
 | ojRunner.workingDirectory           | Working directory for compile and run (empty = the source file directory)                                                       |
