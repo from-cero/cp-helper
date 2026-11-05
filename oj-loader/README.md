@@ -73,9 +73,9 @@ A content script on Codeforces and AtCoder problem pages sets the tab title to
 `<letter> - <contest>` (`/contest/2266/problem/D` becomes `D - 2266`,
 `/contests/abc451/tasks/abc451_a` becomes `A - abc451`), so a row of open problems reads as the
 problem list. Contest lists, standings and other pages keep their title. The title is set again
-when the page changes it or navigates in place. LeetCode is not covered, since its URL has the slug but not the problem number.
-Turn this off with Short tab titles on Codeforces and AtCoder problem pages on the options page
-(default on). The change applies on the next page load.
+when the page changes it or navigates in place. LeetCode is not covered, since its URL has the
+slug but not the problem number. Turn this off with Short tab titles on Codeforces and AtCoder
+problem pages on the options page (default on). The change applies on the next page load.
 
 ### Codeforces problem tags
 
